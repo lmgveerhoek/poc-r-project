@@ -1,6 +1,7 @@
 library(mlflow)
 library(dotenv)
 
+# Load .env 
 load_dot_env(file = ".env")
 
 # Function: Retrieves the MLFlow URI from the environment
