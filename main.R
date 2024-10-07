@@ -13,7 +13,11 @@ source("scripts/validate_model.R")
 load_dot_env(file = ".env")
 
 # Set MLflow tracking URI
-mlflow_set_tracking_uri(Sys.getenv("MLFLOW_TRACKING_URI"))
+tracking_uri <- Sys.getenv("MLFLOW_TRACKING_URI")
+if (tracking_uri == "") {
+  stop("Error: MLFLOW_TRACKING_URI environment variable is not set. Please set it in your .env file or environment.")
+}
+mlflow_set_tracking_uri(tracking_uri)
 client <- mlflow_client()
 
 # Parse command line arguments
@@ -36,20 +40,18 @@ option_list <- list(
   )
 )
 
-opt_parser <- OptionParser(option_list = option_list)
-opt <- parse_args(opt_parser)
-
 # Check if running in interactive mode, if so, use default values
 if (interactive()) {
   # Set default values for RStudio/development
   opt <- list(
-    mode = "validate",
+    mode = "validate", # Change to "train" to test training mode
     source = "csv",
     file = "data/sample_data.csv"
   )
   cat("Detected interactive mode. Using default values for development.\n")
 } else {
   # Parse arguments for production use
+  opt_parser <- OptionParser(option_list = option_list)
   opt <- parse_args(opt_parser)
 }
 
@@ -83,16 +85,23 @@ switch(opt$source,
     }
 
     # Run the query and download the results into an R dataframe
-    result <- bq_project_query(project_id, query)
-    data <- bq_table_download(result, quiet = TRUE)
+    tryCatch(
+      {
+        result <- bq_project_query(project_id, query)
+        data <- bq_table_download(result, quiet = TRUE)
+      },
+      error = function(e) {
+        stop("Error running BigQuery query: ", e$message)
+      }
+    )
   },
   # Load data from CSV
   csv = {
-    if (!is.null(opt$file)) {
+    if (!is.null(opt$file) && file.exists(opt$file)) {
       # Load data from CSV file
       data <- read.csv(opt$file)
     } else {
-      stop("CSV file not specified. Use '--file' option to provide a valid CSV file.")
+      stop("CSV file not specified or doesn't exist. Use '--file' option to provide a valid CSV file.")
     }
   },
   stop("Invalid data source provided. Use 'bigquery' or 'csv'.")
