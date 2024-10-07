@@ -1,0 +1,13 @@
+services:
+  r-app:
+    build:
+      context: .  # The directory containing the Dockerfile
+      dockerfile: Dockerfile  # Use your Dockerfile
+    # image: r-app:latest  # Tag for your image
+    # env_file: 
+    #   - .env  # Load environment variables from the .env file in the project folder
+    # volumes:
+    #   - .:/usr/src/app  # Mount the current directory to the container's working directory
+    container_name: r-app 
+    # Optionally specify a command if you want to override the default CMD in the Dockerfile
+    # command: ["Rscript", "main.R"]
