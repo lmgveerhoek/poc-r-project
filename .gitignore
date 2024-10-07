@@ -5,3 +5,9 @@
 .Renviron
 .env
 .DS_Store
+
+# Exclude credentials folder
+credentials/
+
+# Just to be sure: Exclude any service account JSON file, regardless of its location
+*.json
