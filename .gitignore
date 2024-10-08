@@ -11,3 +11,6 @@ credentials/
 
 # Just to be sure: Exclude any service account JSON file, regardless of its location
 *.json
+
+# Exclude any Python virtual environment
+.venv/
