@@ -1,8 +1,14 @@
+# Load the required libraries
 library(mlflow)
 library(dotenv)
 library(bigrquery)
 library(glue)
 library(optparse)
+library(caret)
+library(Metrics)  # For calculating RMSE
+library(readr)    # For reading CSV data
+library(MASS)     # For Boston dataset
+library(carrier)  # For wrapping the model
 
 # Source the training and validation functions
 cat("Sourcing training and validation functions...\n")
@@ -18,7 +24,6 @@ if (tracking_uri == "") {
   stop("Error: MLFLOW_TRACKING_URI environment variable is not set. Please set it in your .env file or environment.")
 }
 mlflow_set_tracking_uri(tracking_uri)
-client <- mlflow_client()
 
 # Parse command line arguments
 option_list <- list(
@@ -44,7 +49,7 @@ option_list <- list(
 if (interactive()) {
   # Set default values for RStudio/development
   opt <- list(
-    mode = "validate", # Change to "train" to test training mode
+    mode = "train", # Change to "train" to test training mode
     source = "csv",
     file = "data/sample_data.csv"
   )
