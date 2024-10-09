@@ -13,37 +13,52 @@ validate_model <- function(data) {
   cat("Model validation complete.\n")
 }
 
-# Modular function to compute monitoring RMSE
+# Function to compute monitoring RMSE
 compute_monitoring_rmse <- function(model_name, alias = "champion", new_data, target_column) {
-  # Start an MLflow run for logging the monitoring metrics
-  mlflow_start_run()
+  # Define mlflow_run variable outside tryCatch to access it in error handling
+  mlflow_run <- NULL
 
-  # Load the model from MLflow
-  model <- mlflow_load_model(glue("models:/{model_name}@{alias}"))
+  # Wrap all actions in a tryCatch to handle errors
+  tryCatch(
+    {
+      # Start an MLflow run for logging the monitoring metrics
+      mlflow_run <- mlflow_start_run()
 
-  # Ensure the new_data contains the target column for RMSE calculation
-  if (!target_column %in% colnames(new_data)) {
-    stop(paste("The new data does not have the specified target column:", target_column))
-  }
+      # Load the model from MLflow
+      model <- mlflow_load_model(glue("models:/{model_name}@{alias}"))
 
-  # Separate the features and target
-  features <- new_data[, !(colnames(new_data) %in% target_column)]
-  actuals <- new_data[[target_column]]
+      # Ensure the new_data contains the target column for RMSE calculation
+      if (!target_column %in% colnames(new_data)) {
+        stop(paste("The new data does not have the specified target column:", target_column))
+      }
 
-  # Make predictions using the loaded model
-  predictions <- model(features)
+      # Separate the features and target
+      features <- new_data[, !(colnames(new_data) %in% target_column)]
+      actuals <- new_data[[target_column]]
 
-  # Calculate RMSE
-  rmse_value <- rmse(actuals, predictions)
+      # Make predictions using the loaded model
+      predictions <- model(features)
 
-  # Log the RMSE to MLflow
-  mlflow_log_metric("monitoring_rmse", rmse_value)
+      # Calculate RMSE
+      rmse_value <- rmse(actuals, predictions)
 
-  # End MLflow run
-  mlflow_end_run()
+      # Log the RMSE to MLflow
+      mlflow_log_metric("monitoring_rmse", rmse_value)
 
-  # Print RMSE
-  cat("Monitoring RMSE:", rmse_value, "\n")
+      # End MLflow run successfully
+      mlflow_end_run(run_id = mlflow_run$run_uuid, status = "FINISHED")
+
+      # Print RMSE
+      cat("Monitoring RMSE:", rmse_value, "\n")
+    },
+    error = function(e) {
+      # End MLflow run with failed status if mlflow_run has been started
+      if (!is.null(mlflow_run)) {
+        mlflow_end_run(run_id = mlflow_run$run_uuid, status = "FAILED")
+      }
+      cat("An error occurred:", e$message, "\n")
+    }
+  )
 }
 
 test_compute_monitoring_rmse <- function() {
