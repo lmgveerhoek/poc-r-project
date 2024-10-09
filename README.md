@@ -72,3 +72,10 @@ If you choose to use a different location for the virtual environment, you need 
 MLFLOW_PYTHON_BIN="path/to/your/virtual/environment/bin/python"
 ```
 
+### Evaluating performance of a model
+
+To evaluate the performance of a model, you can use the `compute_monitoring_rmse` function. This function takes the following arguments:
+
+The best version of the model should have an alias of `champion` in the MLflow tracking server. The function will retrieve the best model from the tracking server and evaluate the performance of the model on the test set. 
+
+

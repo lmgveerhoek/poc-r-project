@@ -4,11 +4,8 @@ library(dotenv)
 library(bigrquery)
 library(glue)
 library(optparse)
-library(caret)
-library(Metrics)  # For calculating RMSE
 library(readr)    # For reading CSV data
 library(MASS)     # For Boston dataset
-library(carrier)  # For wrapping the model
 
 # Source the training and validation functions
 cat("Sourcing training and validation functions...\n")

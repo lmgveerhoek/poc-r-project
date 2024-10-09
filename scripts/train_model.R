@@ -1,3 +1,9 @@
+library(mlflow)
+library(caret)
+library(Metrics) # For calculating RMSE
+library(MASS) # For Boston dataset
+library(carrier) # For wrapping the model
+
 # Function to simulate training a linear regression model
 train_model <- function(data) {
   cat("Training model with the provided data...\n")
@@ -55,4 +61,10 @@ train_model <- function(data) {
       cat("An error occurred:", e$message, "\n")
     }
   )
+}
+
+# Test the training function
+test_train_model <- function() {
+  # Example usage of training function
+  train_model(data = NULL)
 }
