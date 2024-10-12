@@ -39,6 +39,18 @@ option_list <- list(
   make_option(c("-q", "--query"),
     type = "character",
     help = "SQL query to run against BigQuery (optional)", metavar = "character"
+  ),
+  make_option(c("-n", "--model_name"),
+    type = "character", default = "default_model",
+    help = "Name of the model", metavar = "character"
+  ),
+  make_option(c("-a", "--model_alias"),
+    type = "character", default = "latest",
+    help = "Alias for the model (for verification)", metavar = "character"
+  ),
+  make_option(c("-t", "--target_column"),
+    type = "character", default = "medv",
+    help = "Name of the target column", metavar = "character"
   )
 )
 
@@ -115,10 +127,15 @@ print(data)
 # Execute based on the mode parameter
 switch(opt$mode,
   train = {
-    train_model(data)
+    train_model(data, model_name = opt$model_name, target_column = opt$target_column)
   },
   validate = {
-    validate_model(data)
+    compute_monitoring_rmse(
+      model_name = opt$model_name,
+      alias = opt$model_alias,
+      new_data = data,
+      target_column = opt$target_column
+    )
   },
   stop("Invalid mode provided. Use 'train' or 'validate'.")
 )

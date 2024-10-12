@@ -5,14 +5,6 @@ library(caret)
 library(MASS) # For Boston dataset
 library(glue)
 
-# Function to simulate validating a linear regression model
-validate_model <- function(data) {
-  cat("Validating model with the provided data...\n")
-  # Simulated validation logic (replace with actual model validation)
-  Sys.sleep(2)
-  cat("Model validation complete.\n")
-}
-
 # Function to compute monitoring RMSE
 compute_monitoring_rmse <- function(model_name, alias = "champion", new_data, target_column) {
   # Define mlflow_run variable outside tryCatch to access it in error handling

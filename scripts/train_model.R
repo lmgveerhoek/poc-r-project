@@ -5,12 +5,8 @@ library(MASS) # For Boston dataset
 library(carrier) # For wrapping the model
 
 # Function to train a linear regression model
-train_model <- function(data, model_name = "Trained_Model", artifact_path = "Model_Artifact") {
+train_model <- function(data, model_name = "Trained_Model", artifact_path = "Model_Artifact", target_column) {
   cat("Training model with the provided data...\n")
-
-  # Hardcoded target column and model method
-  target_column <- "medv"
-  model_method <- "lm"
 
   # Ensure data contains the target column
   if (!target_column %in% colnames(data)) {
@@ -30,7 +26,7 @@ train_model <- function(data, model_name = "Trained_Model", artifact_path = "Mod
 
   # Train the multiple linear regression model
   formula <- as.formula(paste(target_column, "~ ."))
-  model <- train(formula, data = training_data, method = model_method)
+  model <- train(formula, data = training_data, method = "lm")
 
   # Wrap the model using `crate()`
   fn <- crate(~ caret::predict.train(model, .x), model = model)
@@ -84,5 +80,5 @@ test_train_model <- function() {
   data("Boston")
   
   # Example usage of training function
-  train_model(data = Boston, model_name = "Boston_Housing_MLR_Model", artifact_path = "Boston_Housing_MLR_Artifact")
+  train_model(data = Boston, model_name = "Boston_Housing_MLR_Model", artifact_path = "Boston_Housing_MLR_Artifact", target_column = "medv")
 }
