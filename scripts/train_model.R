@@ -3,6 +3,7 @@ library(caret)
 library(Metrics) # For calculating RMSE
 library(MASS) # For Boston dataset
 library(carrier) # For wrapping the model
+library(glue)
 
 #' Train a linear regression model and log it with MLflow
 #'
@@ -18,6 +19,8 @@ train_model <- function(data, model_name = "Trained_Model", artifact_path = "Mod
   }
 
   mlflow_run <- NULL
+  nan_encountered <- FALSE  # Flag to track if NaN values were encountered
+
   tryCatch(
     {
       mlflow_run <- mlflow_start_run()
@@ -47,21 +50,31 @@ train_model <- function(data, model_name = "Trained_Model", artifact_path = "Mod
       actuals <- testing_data[[target_column]]
 
       metrics <- list(
-        MAE = mean(abs(predictions - actuals)),
-        MSE = mean((predictions - actuals)^2),
-        RMSE = sqrt(mean((predictions - actuals)^2))
+        MAE = mean(abs(predictions - actuals), na.rm = TRUE),
+        MSE = mean((predictions - actuals)^2, na.rm = TRUE),
+        RMSE = sqrt(mean((predictions - actuals)^2, na.rm = TRUE))
       )
 
       for (metric_name in names(metrics)) {
-        mlflow_log_metric(metric_name, metrics[[metric_name]])
-        cat(paste(metric_name, ":", metrics[[metric_name]], "\n"))
+        if (is.nan(metrics[[metric_name]])) {
+          cat(glue("Warning: {metric_name} is NaN. Check your data and model.\n"))
+          nan_encountered <- TRUE
+        } else {
+          mlflow_log_metric(metric_name, metrics[[metric_name]])
+          cat(glue("{metric_name}: {metrics[[metric_name]]}\n"))
+        }
       }
 
-      mlflow_end_run(status = "FINISHED")
-      cat("Model training and logging completed successfully.\n")
+      mlflow_end_run(status = if(nan_encountered) "FAILED" else "FINISHED")
+      
+      if (nan_encountered) {
+        cat("Model training completed, but NaN values were encountered in metrics. Please review your data and model.\n")
+      } else {
+        cat("Model training and logging completed successfully.\n")
+      }
     },
     error = function(e) {
-      cat("An error occurred during model training:", e$message, "\n")
+      cat(glue("An error occurred during model training: {e$message}\n"))
       if (!is.null(mlflow_run)) {
         mlflow_end_run(status = "FAILED")
       }

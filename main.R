@@ -60,7 +60,14 @@ parse_arguments <- function() {
   )
 
   if (interactive()) {
-    list(mode = "train", source = "csv", file = "data/sample_data.csv")
+    list(
+      mode = "train", 
+      source = "csv", 
+      file = "data/sample_data.csv",
+      model_name = "default_model",
+      model_alias = "latest",
+      target_column = "squared_meters"
+    )
   } else {
     parse_args(OptionParser(option_list = option_list))
   }

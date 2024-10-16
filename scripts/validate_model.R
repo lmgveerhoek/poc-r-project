@@ -41,7 +41,7 @@ compute_monitoring_rmse <- function(model_name, alias = "champion", new_data, ta
 
       # Validate input data
       if (!target_column %in% colnames(new_data)) {
-        stop(paste("The new data does not have the specified target column:", target_column))
+        stop(glue("The new data does not have the specified target column: {target_column}"))
       }
 
       # Separate features and target
@@ -57,13 +57,13 @@ compute_monitoring_rmse <- function(model_name, alias = "champion", new_data, ta
       # Log the RMSE to MLflow
       mlflow_log_metric("monitoring_rmse", rmse_value)
 
-      cat("Monitoring RMSE:", rmse_value, "\n")
+      cat(glue("Monitoring RMSE: {rmse_value}\n"))
 
       mlflow_end_run(status = "FINISHED")
       cat("Model validation and RMSE logging completed successfully.\n")
     },
     error = function(e) {
-      cat("Error during model validation:", e$message, "\n")
+      cat(glue("Error during model validation: {e$message}\n"))
       if (!is.null(mlflow_run)) {
         mlflow_end_run(status = "FAILED")
       }
